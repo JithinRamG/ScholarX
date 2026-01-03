@@ -1,0 +1,144 @@
+import streamlit as st
+import math
+import urllib.parse
+
+# ---------------- PAGE CONFIG ----------------
+st.set_page_config(
+    page_title="ScholarX",
+    page_icon="🎓",
+    layout="centered"
+)
+
+# ---------------- SESSION STATE INIT ----------------
+if "checked" not in st.session_state:
+    st.session_state.checked = False
+
+# ---------------- TITLE ----------------
+st.title("🎓 ScholarX")
+st.caption("Smart Attendance Safety Assistant")
+
+st.divider()
+
+# ---------------- INPUTS ----------------
+subject = st.text_input("📘 Subject Name", key="subject")
+
+total_classes = st.number_input(
+    "📊 Total classes conducted",
+    min_value=1,
+    step=1,
+    key="total"
+)
+
+attended_classes = st.number_input(
+    "✅ Classes attended",
+    min_value=0,
+    max_value=total_classes,
+    step=1,
+    key="attended"
+)
+
+st.divider()
+
+# ---------------- CHECK STATUS ----------------
+if st.button("Check Attendance Status"):
+    st.session_state.checked = True
+
+if st.session_state.checked:
+
+    attendance_percent = (attended_classes / total_classes) * 100
+    st.subheader(f"📈 Attendance: {attendance_percent:.2f}%")
+
+    REQUIRED = 75
+
+    if attendance_percent >= REQUIRED:
+        st.success("✅ You are SAFE! Keep it up 💪")
+    else:
+        st.error("🚨 At Risk of Attendance Shortage")
+
+        needed = math.ceil(
+            (REQUIRED * total_classes - 100 * attended_classes) /
+            (100 - REQUIRED)
+        )
+
+        st.warning(
+            f"📌 You need to attend **{needed} more consecutive classes** to reach 75%"
+        )
+
+    st.divider()
+
+    # ---------------- SIMULATOR ----------------
+    st.subheader("🔮 Attendance Simulator")
+
+    future_total = total_classes + 1
+    future_attended = attended_classes
+    future_percent = (future_attended / future_total) * 100
+
+    st.info(
+        f"If you **miss the next class**, your attendance becomes **{future_percent:.2f}%**"
+    )
+
+    safe_miss = math.floor(
+        (attended_classes / (REQUIRED / 100)) - total_classes
+    )
+
+    if safe_miss <= 0:
+        st.warning("⚠️ You cannot miss any more classes safely")
+    else:
+        st.success(
+            f"✅ You can miss **{safe_miss}** more classes safely"
+        )
+
+    st.divider()
+
+    # ---------------- GOOGLE CALENDAR ----------------
+    st.subheader("📅 Google Calendar Integration")
+
+    event_title = f"Attend {subject} Class"
+    event_desc = f"NextClass reminder to attend {subject} class to maintain attendance."
+
+    calendar_url = (
+        "https://calendar.google.com/calendar/render?action=TEMPLATE"
+        f"&text={urllib.parse.quote(event_title)}"
+        f"&details={urllib.parse.quote(event_desc)}"
+    )
+
+    st.markdown(
+        f"""
+        <a href="{calendar_url}" target="_blank">
+            <button style="
+                padding:10px 20px;
+                font-size:16px;
+                border-radius:8px;
+                background-color:#1a73e8;
+                color:white;
+                border:none;
+                cursor:pointer;">
+                ➕ Add to Google Calendar
+            </button>
+        </a>
+        """,
+        unsafe_allow_html=True
+    )
+
+# ---------------- FOOTER ----------------
+st.divider()
+st.caption("🚀 Built for GDG on Campus TechSprint | Google-powered student solution")
+
+st.markdown(
+    """
+    <style>
+    .credit {
+        position: fixed;
+        bottom: 16px;
+        right: 24px;
+        font-size: 15px;        
+        font-weight: 500;
+        color: white;          
+        opacity: 0.9;          
+        z-index: 1000;
+    }
+    </style>
+    <div class="credit">Built by Jithin</div>
+    """,
+    unsafe_allow_html=True
+)
