@@ -1,0 +1,62 @@
+print("=== NextClass : Attendance Recovery Planner ===")
+
+subject = input("Enter subject name: ")
+total_classes = int(input("Total classes conducted: "))
+attended_classes = int(input("Classes attended: "))
+required_percentage = int(input("Required attendance percentage (e.g. 75): "))
+
+current_percentage = (attended_classes / total_classes) * 100
+
+print("\nSubject:", subject)
+print("Current Attendance:", round(current_percentage, 2), "%")
+
+if current_percentage >= required_percentage:
+    status = "SAFE"
+elif current_percentage >= 65:
+    status = "AT RISK"
+else:
+    status = "CRITICAL"
+
+print("Status:", status)
+
+future_classes = 0
+temp_total = total_classes
+temp_attended = attended_classes
+
+while (temp_attended / temp_total) * 100 < required_percentage:
+    temp_total += 1
+    temp_attended += 1
+    future_classes += 1
+
+print("\nTo reach", required_percentage, "% attendance,")
+print("you must attend the next", future_classes, "classes continuously.")
+
+miss_next = (attended_classes / (total_classes + 1)) * 100
+print("If you miss the next class, attendance becomes:", round(miss_next, 2), "%")
+
+from datetime import datetime, timedelta
+
+filename = subject + "_recovery_plan.ics"
+start_date = datetime.now() + timedelta(days=1)
+
+file = open(filename, "w")
+
+file.write("BEGIN:VCALENDAR\n")
+file.write("VERSION:2.0\n")
+file.write("CALSCALE:GREGORIAN\n")
+
+for i in range(future_classes):
+    event_date = start_date + timedelta(days=i)
+    file.write("BEGIN:VEVENT\n")
+    file.write("SUMMARY:Attend " + subject + " Class\n")
+    file.write("DTSTART;VALUE=DATE:" + event_date.strftime("%Y%m%d") + "\n")
+    file.write("DTEND;VALUE=DATE:" + event_date.strftime("%Y%m%d") + "\n")
+    file.write("END:VEVENT\n")
+
+file.write("END:VCALENDAR\n")
+file.close()
+
+print("\nGoogle Calendar file created:", filename)
+print("Import this file into Google Calendar.")
+input("\nPress ENTER to exit...")
+
